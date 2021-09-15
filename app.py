@@ -42,12 +42,20 @@ def status():
 @app.route("/send", methods=["POST"])
 def send_message():
     data = request.json
+
+    if not isinstance(data, dict):
+      abort(400)
     if "text" not in data or "name" not in data:
       abort(400)
-    if len(data["text"]) > 100 or len(data["name"]) > 100:
-      abort(400)
+
     text = data["text"]
-    name = data["name"]
+    name = data["name"]    
+
+    if len(text) > 100 or len(name) > 100:
+      abort(400)
+    if len(text) == 0 or len(name) == 0:
+      abort(400)
+
     mes = {
       "msg": text,
       "name": name,
@@ -58,6 +66,8 @@ def send_message():
 
 @app.route("/receive", methods=["GET"])
 def get_messages():
+  if "after" not in request.args:
+    abort(400)
   after = request.args["after"]
   try:
     after=float(after)
@@ -69,10 +79,6 @@ def get_messages():
     if item["date"] > after:
       result.append(item)
   return {"messages": result[:N]}
-
-
-
-
 
 
 @app.route("/show", methods=["GET"])
